@@ -79,9 +79,13 @@ export function AppShell() {
     const currId = user?.id ?? null
     prevUserIdRef.current = currId
 
+    console.log('[AppShell] auth effect', { prevId, currId, authLoading })
+
     if (currId && currId !== prevId) {
+      console.log('[AppShell] → login detected, migrating + loading')
       migrateGuestData(currId).then(() => loadFromDB(currId))
     } else if (!currId && prevId) {
+      console.log('[AppShell] → logout detected, resetting')
       resetAll()
     }
   }, [user, authLoading, loadFromDB, migrateGuestData, resetAll])

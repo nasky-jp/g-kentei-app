@@ -100,12 +100,14 @@ export const useProgressStore = create<ProgressState>()(
           .from('card_progress')
           .select('*')
           .eq('user_id', userId)
+        console.log('[progressStore] loadFromDB', { userId, count: data?.length, error })
         if (error) {
           console.error('[progressStore] loadFromDB error', error)
           return
         }
         // DBにデータがない場合はlocalStorageを維持（初回ログイン時のリセット防止）
         if (!data || data.length === 0) {
+          console.log('[progressStore] loadFromDB: DB empty, keeping localStorage')
           set({ syncCount: 0 })
           return
         }
@@ -114,12 +116,14 @@ export const useProgressStore = create<ProgressState>()(
           const c = fromRow(row as Record<string, unknown>)
           cards[c.questionId] = c
         }
+        console.log('[progressStore] loadFromDB: loaded', Object.keys(cards).length, 'cards')
         set({ cards, syncCount: 0 })
       },
 
       migrateGuestData: async (userId) => {
         // persistのhydration完了を待つため、localStorageから直接読む
         let localCards = Object.values(get().cards)
+        console.log('[progressStore] migrateGuestData start', { userId, storeCards: localCards.length })
         if (localCards.length === 0) {
           try {
             const raw = localStorage.getItem('g-kentei-progress')
@@ -127,12 +131,16 @@ export const useProgressStore = create<ProgressState>()(
               const parsed = JSON.parse(raw)
               const storedCards = parsed?.state?.cards ?? {}
               localCards = Object.values(storedCards) as CardState[]
+              console.log('[progressStore] migrateGuestData: read from localStorage', localCards.length, 'cards')
             }
           } catch {
             // parse失敗時はそのまま続行
           }
         }
-        if (localCards.length === 0) return
+        if (localCards.length === 0) {
+          console.log('[progressStore] migrateGuestData: no local data, skipping')
+          return
+        }
 
         // DBの既存データを取得してマージ（ログイン忘れで操作した分も反映）
         const { data: existing } = await supabase
@@ -160,6 +168,7 @@ export const useProgressStore = create<ProgressState>()(
         const { error } = await supabase
           .from('card_progress')
           .upsert(rows, { onConflict: 'user_id,question_id' })
+        console.log('[progressStore] migrateGuestData upsert', { rows: rows.length, error })
         if (error) {
           console.error('[progressStore] migrateGuestData error', error)
           return
