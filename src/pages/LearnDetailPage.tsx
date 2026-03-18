@@ -73,11 +73,8 @@ export function LearnDetailPage() {
 
       {/* モバイルサイドバー（スライドイン） */}
       <aside
-        className={`
-          fixed top-0 left-0 h-full w-64 bg-background border-r z-30 overflow-y-auto p-4
-          transition-transform duration-200 lg:hidden
-          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-        `}
+        className="fixed top-0 left-0 h-full w-64 bg-background border-r z-30 overflow-y-auto p-4 transition-transform duration-200 lg:hidden"
+        style={{ transform: sidebarOpen ? 'translateX(0)' : 'translateX(-100%)' }}
       >
         <div className="flex items-center justify-between mb-4">
           <span className="font-semibold text-sm">トピック一覧</span>
