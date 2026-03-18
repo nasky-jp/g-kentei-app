@@ -6,8 +6,10 @@ import { cn } from '@/lib/utils'
 import { useQuizStore } from '@/store/quizStore'
 import { useSettingsStore } from '@/store/settingsStore'
 import { useAuthStore } from '@/store/authStore'
+import { useProgressStore } from '@/store/progressStore'
 import { Button } from '@/components/ui/button'
 import { AuthModal } from '@/components/auth/AuthModal'
+import { ConversionNudge } from '@/components/auth/ConversionNudge'
 
 const navItems = [
   { to: '/', label: 'ホーム', icon: Home },
@@ -55,6 +57,7 @@ export function AppShell() {
   const { session, reset } = useQuizStore()
   const { theme } = useSettingsStore()
   const { user, initialize, signOut } = useAuthStore()
+  const { loadFromDB, migrateGuestData } = useProgressStore()
   const [showExitDialog, setShowExitDialog] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const pendingNavRef = useRef<string | null>(null)
@@ -65,6 +68,11 @@ export function AppShell() {
       unsubPromise.then((unsub) => unsub())
     }
   }, [initialize])
+
+  useEffect(() => {
+    if (!user) return
+    migrateGuestData(user.id).then(() => loadFromDB(user.id))
+  }, [user, loadFromDB, migrateGuestData])
 
   useEffect(() => {
     const root = document.documentElement
@@ -237,6 +245,9 @@ export function AppShell() {
           <AuthModal onClose={() => setShowAuthModal(false)} />
         )}
       </AnimatePresence>
+
+      {/* コンバージョンナッジ */}
+      <ConversionNudge onOpenAuthModal={() => setShowAuthModal(true)} />
     </div>
   )
 }
