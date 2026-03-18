@@ -90,7 +90,7 @@ export const useProgressStore = create<ProgressState>()(
           const c = cards[id]
           if (!c) continue
           if (c.reps > 0) learned++
-          if (c.stability >= 21) mastered++
+          if (c.stability >= 5) mastered++
         }
         return { category, total: questionIds.length, learned, mastered }
       },
@@ -118,7 +118,20 @@ export const useProgressStore = create<ProgressState>()(
       },
 
       migrateGuestData: async (userId) => {
-        const localCards = Object.values(get().cards)
+        // persistのhydration完了を待つため、localStorageから直接読む
+        let localCards = Object.values(get().cards)
+        if (localCards.length === 0) {
+          try {
+            const raw = localStorage.getItem('g-kentei-progress')
+            if (raw) {
+              const parsed = JSON.parse(raw)
+              const storedCards = parsed?.state?.cards ?? {}
+              localCards = Object.values(storedCards) as CardState[]
+            }
+          } catch {
+            // parse失敗時はそのまま続行
+          }
+        }
         if (localCards.length === 0) return
 
         // DBの既存データを取得してマージ（ログイン忘れで操作した分も反映）

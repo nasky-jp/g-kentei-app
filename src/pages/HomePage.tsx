@@ -55,7 +55,7 @@ export function HomePage() {
   const totalPct = totalItems > 0 ? Math.round((learnedItems / totalItems) * 100) : 0
 
   // 習得済み問題数
-  const masteredCount = Object.values(cards).filter((c) => c.stability >= 21).length
+  const masteredCount = Object.values(cards).filter((c) => c.stability >= 5).length
 
   // 連続学習日数
   const streak = getStreakDays(cards)

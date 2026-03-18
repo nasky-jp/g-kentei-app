@@ -28,7 +28,7 @@ export function LearnPage() {
   // シラバス項目が「習得済み」= 紐づく全問題の stability >= 21
   const isItemMastered = (syllabusId: string) => {
     const qs = QUESTIONS.filter((q) => q.syllabusId === syllabusId)
-    return qs.length > 0 && qs.every((q) => (cards[q.id]?.stability ?? 0) >= 21)
+    return qs.length > 0 && qs.every((q) => (cards[q.id]?.stability ?? 0) >= 5)
   }
 
   // カテゴリ別統計

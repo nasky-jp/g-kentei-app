@@ -50,7 +50,7 @@ export interface CategoryProgress {
   category: SyllabusCategory
   total: number
   learned: number   // answered at least once
-  mastered: number  // stability >= 21
+  mastered: number  // stability >= 5
 }
 
 // ── クイズセッション ───────────────────────────────────────
