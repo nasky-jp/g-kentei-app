@@ -74,7 +74,11 @@ export function HomePage() {
     (q) => !cards[q.id] || cards[q.id].reps === 0
   ).length
   const answeredCount = QUESTIONS.length - unansweredCount
-  const totalPct = QUESTIONS.length > 0 ? Math.round((answeredCount / QUESTIONS.length) * 100) : 0
+  const correctCount = QUESTIONS.filter((q) => {
+    const c = cards[q.id]
+    return c && c.reps > c.lapses
+  }).length
+  const totalPct = QUESTIONS.length > 0 ? Math.round((correctCount / QUESTIONS.length) * 100) : 0
   const hasStarted = answeredCount > 0
 
   return (
@@ -147,7 +151,7 @@ export function HomePage() {
         <CardContent className="space-y-2">
           <div className="flex items-end justify-between">
             <span className="text-3xl font-bold text-primary">{totalPct}%</span>
-            <span className="text-sm text-muted-foreground">{answeredCount}/{QUESTIONS.length}問 回答済み</span>
+            <span className="text-sm text-muted-foreground">{correctCount}/{QUESTIONS.length}問 正答済み</span>
           </div>
           <Progress value={totalPct} className="h-3" />
         </CardContent>

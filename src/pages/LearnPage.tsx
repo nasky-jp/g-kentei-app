@@ -44,8 +44,11 @@ export function LearnPage() {
 
   // 全体サマリ（問題ベース）
   const totalQs = QUESTIONS.length
-  const totalAnsweredQs = QUESTIONS.filter((q) => (cards[q.id]?.reps ?? 0) > 0).length
-  const totalPct = totalQs > 0 ? Math.round((totalAnsweredQs / totalQs) * 100) : 0
+  const totalCorrectQs = QUESTIONS.filter((q) => {
+    const c = cards[q.id]
+    return c && c.reps > c.lapses
+  }).length
+  const totalPct = totalQs > 0 ? Math.round((totalCorrectQs / totalQs) * 100) : 0
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto px-4 sm:px-6 py-5 sm:py-6 pb-28 lg:pb-8">
@@ -61,7 +64,7 @@ export function LearnPage() {
         <div>
           <Progress value={totalPct} className="h-3" />
           <p className="text-xs text-muted-foreground mt-1">
-            {totalAnsweredQs} / {totalQs} 問 回答済み
+            {totalCorrectQs} / {totalQs} 問 正答済み
           </p>
         </div>
       </div>
