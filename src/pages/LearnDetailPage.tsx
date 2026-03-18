@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { SYLLABUS_ITEMS, CATEGORY_LABELS, CATEGORY_COLORS } from '@/data/syllabus'
 import { useProgressStore } from '@/store/progressStore'
+import { useQuizStore } from '@/store/quizStore'
 import { QUESTIONS } from '@/data/questions'
 import type { SyllabusCategory } from '@/types'
 
@@ -14,6 +15,7 @@ export function LearnDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { cards } = useProgressStore()
+  const { startSession } = useQuizStore()
   const [markdown, setMarkdown] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -167,7 +169,14 @@ export function LearnDetailPage() {
               <div className="mt-6 p-4 border rounded-lg bg-primary/5 border-primary/20">
                 <p className="text-sm font-medium mb-1">このトピックの問題を解く</p>
                 <p className="text-xs text-muted-foreground mb-3">{qCount}問が利用できます</p>
-                <Button onClick={() => navigate('/practice')} size="sm">
+                <Button
+                  onClick={() => {
+                    const qs = QUESTIONS.filter((q) => q.syllabusId === item.id)
+                    startSession('flashcard', qs)
+                    navigate('/practice')
+                  }}
+                  size="sm"
+                >
                   練習問題へ
                 </Button>
               </div>
