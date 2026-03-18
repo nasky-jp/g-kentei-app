@@ -1,11 +1,13 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { Home, BookOpen, Dumbbell, Settings } from 'lucide-react'
+import { Home, BookOpen, Dumbbell, Settings, LogIn, LogOut, User } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useRef, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import { useQuizStore } from '@/store/quizStore'
 import { useSettingsStore } from '@/store/settingsStore'
+import { useAuthStore } from '@/store/authStore'
 import { Button } from '@/components/ui/button'
+import { AuthModal } from '@/components/auth/AuthModal'
 
 const navItems = [
   { to: '/', label: 'ホーム', icon: Home },
@@ -52,6 +54,17 @@ export function AppShell() {
   const navigate = useNavigate()
   const { session, reset } = useQuizStore()
   const { theme } = useSettingsStore()
+  const { user, initialize, signOut } = useAuthStore()
+  const [showExitDialog, setShowExitDialog] = useState(false)
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  const pendingNavRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    const unsubPromise = initialize()
+    return () => {
+      unsubPromise.then((unsub) => unsub())
+    }
+  }, [initialize])
 
   useEffect(() => {
     const root = document.documentElement
@@ -60,7 +73,6 @@ export function AppShell() {
     } else if (theme === 'light') {
       root.classList.remove('dark')
     } else {
-      // system
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
       if (prefersDark) {
         root.classList.add('dark')
@@ -69,20 +81,17 @@ export function AppShell() {
       }
     }
   }, [theme])
-  const [showExitDialog, setShowExitDialog] = useState(false)
-  const pendingNavRef = useRef<string | null>(null)
 
   const isExamInProgress =
     session?.mode === 'exam' && session.finishedAt === null
 
   const handleNavClick = (to: string, e: React.MouseEvent) => {
-    if (to === '/practice' || to === '/') return // これらはそのまま通す
+    if (to === '/practice' || to === '/') return
     if (isExamInProgress) {
       e.preventDefault()
       pendingNavRef.current = to
       setShowExitDialog(true)
     } else if (session && session.finishedAt === null) {
-      // 一問一答中は確認なしでリセット
       reset()
     }
   }
@@ -124,14 +133,57 @@ export function AppShell() {
             </NavLink>
           ))}
         </nav>
+
+        {/* ユーザー情報 / ログインボタン（デスクトップ） */}
+        <div className="px-3 py-4 border-t">
+          {user ? (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 px-2 py-1">
+                <User className="h-4 w-4 text-muted-foreground shrink-0" />
+                <span className="text-xs text-muted-foreground truncate">{user.email}</span>
+              </div>
+              <button
+                onClick={() => signOut()}
+                className="flex items-center gap-2 w-full px-2 py-1.5 rounded-lg text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+              >
+                <LogOut className="h-4 w-4 shrink-0" />
+                ログアウト
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowAuthModal(true)}
+              className="flex items-center gap-2 w-full px-2 py-1.5 rounded-lg text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+            >
+              <LogIn className="h-4 w-4 shrink-0" />
+              ログイン / 登録
+            </button>
+          )}
+        </div>
       </aside>
 
       {/* コンテンツエリア */}
       <div className="flex flex-col flex-1 min-w-0">
         {/* モバイルヘッダー */}
         <header className="lg:hidden sticky top-0 z-10 border-b bg-background/80 backdrop-blur-sm">
-          <div className="px-4 h-14 flex items-center">
+          <div className="px-4 h-14 flex items-center justify-between">
             <span className="font-semibold text-primary">G検定対策</span>
+            {user ? (
+              <button
+                onClick={() => signOut()}
+                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowAuthModal(true)}
+                className="flex items-center gap-1.5 text-xs text-primary font-medium"
+              >
+                <LogIn className="h-4 w-4" />
+                ログイン
+              </button>
+            )}
           </div>
         </header>
 
@@ -176,6 +228,13 @@ export function AppShell() {
               pendingNavRef.current = null
             }}
           />
+        )}
+      </AnimatePresence>
+
+      {/* 認証モーダル */}
+      <AnimatePresence>
+        {showAuthModal && (
+          <AuthModal onClose={() => setShowAuthModal(false)} />
         )}
       </AnimatePresence>
     </div>
