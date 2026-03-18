@@ -57,7 +57,7 @@ export function AppShell() {
   const { session, reset } = useQuizStore()
   const { theme } = useSettingsStore()
   const { user, initialize, signOut } = useAuthStore()
-  const { loadFromDB, migrateGuestData } = useProgressStore()
+  const { loadFromDB, migrateGuestData, resetAll } = useProgressStore()
   const [showExitDialog, setShowExitDialog] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const pendingNavRef = useRef<string | null>(null)
@@ -69,10 +69,21 @@ export function AppShell() {
     }
   }, [initialize])
 
+  const prevUserIdRef = useRef<string | null>(null)
+
   useEffect(() => {
-    if (!user) return
-    migrateGuestData(user.id).then(() => loadFromDB(user.id))
-  }, [user, loadFromDB, migrateGuestData])
+    const prevId = prevUserIdRef.current
+    const currId = user?.id ?? null
+    prevUserIdRef.current = currId
+
+    if (currId && currId !== prevId) {
+      // ログイン: ゲストデータをマージしてからDBを読み込む
+      migrateGuestData(currId).then(() => loadFromDB(currId))
+    } else if (!currId && prevId) {
+      // ログアウト: ローカルの進捗をリセット
+      resetAll()
+    }
+  }, [user, loadFromDB, migrateGuestData, resetAll])
 
   useEffect(() => {
     const root = document.documentElement

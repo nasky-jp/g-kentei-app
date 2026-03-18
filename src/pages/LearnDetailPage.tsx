@@ -95,7 +95,7 @@ export function LearnDetailPage() {
 
       <div className="flex">
         {/* デスクトップサイドバー（固定） */}
-        <aside className="hidden lg:block w-52 shrink-0 border-r min-h-[calc(100vh-56px)] sticky top-14 self-start max-h-[calc(100vh-56px)] overflow-y-auto">
+        <aside className="hidden lg:block w-52 shrink-0 border-r sticky top-0 h-screen overflow-y-auto">
           <div className="p-4">
             <p className="text-xs font-semibold text-muted-foreground mb-3">トピック一覧</p>
             <SidebarContent
@@ -149,7 +149,7 @@ export function LearnDetailPage() {
                 prose-ul:my-2 prose-li:text-sm prose-li:text-foreground
                 prose-table:text-xs prose-table:w-full
                 prose-th:bg-muted prose-th:px-3 prose-th:py-2 prose-th:text-left prose-th:font-semibold
-                prose-td:px-3 prose-td:py-2 prose-td:border prose-td:border-border
+                prose-td:px-3 prose-td:py-2 prose-td:border prose-td:border-border prose-td:text-foreground
                 prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-primary/5
                 prose-blockquote:px-4 prose-blockquote:py-2 prose-blockquote:rounded-r-lg prose-blockquote:my-4
                 prose-blockquote:not-italic prose-blockquote:text-foreground
