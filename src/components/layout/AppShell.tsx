@@ -56,7 +56,7 @@ export function AppShell() {
   const navigate = useNavigate()
   const { session, reset } = useQuizStore()
   const { theme } = useSettingsStore()
-  const { user, initialize, signOut } = useAuthStore()
+  const { user, loading: authLoading, initialize, signOut } = useAuthStore()
   const { loadFromDB, migrateGuestData, resetAll } = useProgressStore()
   const [showExitDialog, setShowExitDialog] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
@@ -72,18 +72,19 @@ export function AppShell() {
   const prevUserIdRef = useRef<string | null>(null)
 
   useEffect(() => {
+    // Supabaseのセッション取得が完了するまで待つ（loading中はuser=nullが一時的に発生する）
+    if (authLoading) return
+
     const prevId = prevUserIdRef.current
     const currId = user?.id ?? null
     prevUserIdRef.current = currId
 
     if (currId && currId !== prevId) {
-      // ログイン: ゲストデータをマージしてからDBを読み込む
       migrateGuestData(currId).then(() => loadFromDB(currId))
     } else if (!currId && prevId) {
-      // ログアウト: ローカルの進捗をリセット
       resetAll()
     }
-  }, [user, loadFromDB, migrateGuestData, resetAll])
+  }, [user, authLoading, loadFromDB, migrateGuestData, resetAll])
 
   useEffect(() => {
     const root = document.documentElement
