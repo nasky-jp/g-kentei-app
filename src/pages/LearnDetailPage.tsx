@@ -94,16 +94,19 @@ export function LearnDetailPage() {
       </aside>
 
       <div className="flex">
-        {/* デスクトップサイドバー（固定） */}
-        <aside className="hidden lg:block w-52 shrink-0 border-r sticky top-0 h-screen overflow-y-auto">
-          <div className="p-4">
-            <p className="text-xs font-semibold text-muted-foreground mb-3">トピック一覧</p>
-            <SidebarContent
-              categories={categories}
-              currentId={id!}
-              isItemLearned={isItemLearned}
-              onSelect={(sid) => navigate(`/learn/${sid}`)}
-            />
+        {/* デスクトップサイドバー（fixed固定） */}
+        {/* AppShellのサイドバーがw-56=224px なのでleft-56から開始 */}
+        <aside className="hidden lg:block w-52 shrink-0">
+          <div className="fixed top-0 left-56 w-52 h-screen border-r overflow-y-auto bg-background">
+            <div className="p-4">
+              <p className="text-xs font-semibold text-muted-foreground mb-3">トピック一覧</p>
+              <SidebarContent
+                categories={categories}
+                currentId={id!}
+                isItemLearned={isItemLearned}
+                onSelect={(sid) => navigate(`/learn/${sid}`)}
+              />
+            </div>
           </div>
         </aside>
 
