@@ -11,19 +11,43 @@ interface AuthState {
   signIn: (email: string, password: string) => Promise<{ error: string | null }>
   signInWithGoogle: () => Promise<void>
   signOut: () => Promise<void>
+  onLogin: ((userId: string) => void) | null
+  onLogout: (() => void) | null
+  setCallbacks: (onLogin: (userId: string) => void, onLogout: () => void) => void
 }
 
-export const useAuthStore = create<AuthState>()((set) => ({
+export const useAuthStore = create<AuthState>()((set, get) => ({
   user: null,
   session: null,
   loading: true,
+  onLogin: null,
+  onLogout: null,
+
+  setCallbacks: (onLogin, onLogout) => {
+    set({ onLogin, onLogout })
+  },
 
   initialize: async () => {
     const { data } = await supabase.auth.getSession()
-    set({ session: data.session, user: data.session?.user ?? null, loading: false })
+    const user = data.session?.user ?? null
+    set({ session: data.session, user, loading: false })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      set({ session, user: session?.user ?? null })
+    // 初回ロード時にログイン済みならonLoginを呼ぶ
+    if (user) {
+      get().onLogin?.(user.id)
+    }
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('[authStore] onAuthStateChange', event, session?.user?.id)
+      const prevUser = get().user
+      const nextUser = session?.user ?? null
+      set({ session, user: nextUser })
+
+      if (event === 'SIGNED_IN' && nextUser && prevUser?.id !== nextUser.id) {
+        get().onLogin?.(nextUser.id)
+      } else if (event === 'SIGNED_OUT') {
+        get().onLogout?.()
+      }
     })
 
     return () => subscription.unsubscribe()
@@ -50,6 +74,5 @@ export const useAuthStore = create<AuthState>()((set) => ({
 
   signOut: async () => {
     await supabase.auth.signOut()
-    set({ user: null, session: null })
   },
 }))

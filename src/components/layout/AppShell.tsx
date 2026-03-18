@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { Home, BookOpen, Dumbbell, Settings, LogIn, LogOut, User } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { cn } from '@/lib/utils'
 import { useQuizStore } from '@/store/quizStore'
 import { useSettingsStore } from '@/store/settingsStore'
@@ -56,11 +56,26 @@ export function AppShell() {
   const navigate = useNavigate()
   const { session, reset } = useQuizStore()
   const { theme } = useSettingsStore()
-  const { user, loading: authLoading, initialize, signOut } = useAuthStore()
+  const { user, initialize, signOut, setCallbacks } = useAuthStore()
   const { loadFromDB, migrateGuestData, resetAll } = useProgressStore()
   const [showExitDialog, setShowExitDialog] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const pendingNavRef = useRef<string | null>(null)
+
+  // ログイン・ログアウト時のコールバックをauthStoreに登録
+  const handleLogin = useCallback((userId: string) => {
+    console.log('[AppShell] handleLogin', userId)
+    migrateGuestData(userId).then(() => loadFromDB(userId))
+  }, [migrateGuestData, loadFromDB])
+
+  const handleLogout = useCallback(() => {
+    console.log('[AppShell] handleLogout')
+    resetAll()
+  }, [resetAll])
+
+  useEffect(() => {
+    setCallbacks(handleLogin, handleLogout)
+  }, [setCallbacks, handleLogin, handleLogout])
 
   useEffect(() => {
     const unsubPromise = initialize()
@@ -68,27 +83,6 @@ export function AppShell() {
       unsubPromise.then((unsub) => unsub())
     }
   }, [initialize])
-
-  const prevUserIdRef = useRef<string | null>(null)
-
-  useEffect(() => {
-    // Supabaseのセッション取得が完了するまで待つ（loading中はuser=nullが一時的に発生する）
-    if (authLoading) return
-
-    const prevId = prevUserIdRef.current
-    const currId = user?.id ?? null
-    prevUserIdRef.current = currId
-
-    console.log('[AppShell] auth effect', { prevId, currId, authLoading })
-
-    if (currId && currId !== prevId) {
-      console.log('[AppShell] → login detected, migrating + loading')
-      migrateGuestData(currId).then(() => loadFromDB(currId))
-    } else if (!currId && prevId) {
-      console.log('[AppShell] → logout detected, resetting')
-      resetAll()
-    }
-  }, [user, authLoading, loadFromDB, migrateGuestData, resetAll])
 
   useEffect(() => {
     const root = document.documentElement
