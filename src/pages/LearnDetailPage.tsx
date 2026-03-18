@@ -81,7 +81,7 @@ export function LearnDetailPage() {
       >
         <div className="flex items-center justify-between mb-4">
           <span className="font-semibold text-sm">トピック一覧</span>
-          <button onClick={() => setSidebarOpen(false)}>
+          <button type="button" className="p-1" onClick={() => setSidebarOpen(false)}>
             <X className="h-4 w-4" />
           </button>
         </div>

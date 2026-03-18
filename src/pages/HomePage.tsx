@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { useProgressStore } from '@/store/progressStore'
 import { useQuizStore } from '@/store/quizStore'
 import { QUESTIONS } from '@/data/questions'
-import { SYLLABUS_ITEMS } from '@/data/syllabus'
 import type { CardState } from '@/types'
 
 function getStreakDays(cards: Record<string, CardState>): number {
@@ -45,15 +44,6 @@ export function HomePage() {
     (c) => c.due <= new Date().toISOString()
   ).length
 
-  // 全体進捗
-  const totalItems = SYLLABUS_ITEMS.length
-  const isItemLearned = (syllabusId: string) => {
-    const qs = QUESTIONS.filter((q) => q.syllabusId === syllabusId)
-    return qs.some((q) => (cards[q.id]?.reps ?? 0) > 0)
-  }
-  const learnedItems = SYLLABUS_ITEMS.filter((s) => isItemLearned(s.id)).length
-  const totalPct = totalItems > 0 ? Math.round((learnedItems / totalItems) * 100) : 0
-
   // 習得済み問題数
   const masteredCount = Object.values(cards).filter((c) => c.stability >= 5).length
 
@@ -84,6 +74,7 @@ export function HomePage() {
     (q) => !cards[q.id] || cards[q.id].reps === 0
   ).length
   const answeredCount = QUESTIONS.length - unansweredCount
+  const totalPct = QUESTIONS.length > 0 ? Math.round((answeredCount / QUESTIONS.length) * 100) : 0
   const hasStarted = answeredCount > 0
 
   return (
@@ -156,12 +147,9 @@ export function HomePage() {
         <CardContent className="space-y-2">
           <div className="flex items-end justify-between">
             <span className="text-3xl font-bold text-primary">{totalPct}%</span>
-            <span className="text-sm text-muted-foreground">{learnedItems}/{totalItems} トピック</span>
+            <span className="text-sm text-muted-foreground">{answeredCount}/{QUESTIONS.length}問 回答済み</span>
           </div>
           <Progress value={totalPct} className="h-3" />
-          <p className="text-xs text-muted-foreground">
-            問題 {answeredCount}/{QUESTIONS.length}問 回答済み
-          </p>
         </CardContent>
       </Card>
 

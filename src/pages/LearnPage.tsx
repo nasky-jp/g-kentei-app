@@ -43,9 +43,9 @@ export function LearnPage() {
   }
 
   // 全体サマリ（問題ベース）
-  const totalItems = SYLLABUS_ITEMS.length
-  const totalLearned = SYLLABUS_ITEMS.filter((s) => isItemLearned(s.id)).length
-  const totalPct = totalItems > 0 ? Math.round((totalLearned / totalItems) * 100) : 0
+  const totalQs = QUESTIONS.length
+  const totalAnsweredQs = QUESTIONS.filter((q) => (cards[q.id]?.reps ?? 0) > 0).length
+  const totalPct = totalQs > 0 ? Math.round((totalAnsweredQs / totalQs) * 100) : 0
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto px-4 sm:px-6 py-5 sm:py-6 pb-28 lg:pb-8">
@@ -61,7 +61,7 @@ export function LearnPage() {
         <div>
           <Progress value={totalPct} className="h-3" />
           <p className="text-xs text-muted-foreground mt-1">
-            {totalLearned} / {totalItems} トピック学習済み
+            {totalAnsweredQs} / {totalQs} 問 回答済み
           </p>
         </div>
       </div>
