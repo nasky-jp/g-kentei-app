@@ -7,12 +7,14 @@ import { LearnPage } from '@/pages/LearnPage'
 import { LearnDetailPage } from '@/pages/LearnDetailPage'
 import { PracticePage } from '@/pages/PracticePage'
 import { SettingsPage } from '@/pages/SettingsPage'
+import { AuthCallbackPage } from '@/pages/AuthCallbackPage'
 import './index.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
+        <Route path="/auth/callback" element={<AuthCallbackPage />} />
         <Route element={<AppShell />}>
           <Route index element={<HomePage />} />
           <Route path="/learn" element={<LearnPage />} />
