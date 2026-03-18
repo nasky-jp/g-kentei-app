@@ -104,8 +104,13 @@ export const useProgressStore = create<ProgressState>()(
           console.error('[progressStore] loadFromDB error', error)
           return
         }
+        // DBにデータがない場合はlocalStorageを維持（初回ログイン時のリセット防止）
+        if (!data || data.length === 0) {
+          set({ syncCount: 0 })
+          return
+        }
         const cards: Record<string, CardState> = {}
-        for (const row of data ?? []) {
+        for (const row of data) {
           const c = fromRow(row as Record<string, unknown>)
           cards[c.questionId] = c
         }

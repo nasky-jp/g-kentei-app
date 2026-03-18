@@ -70,7 +70,20 @@ function FlashcardView() {
     setFeedback(isCorrect ? 'correct' : 'wrong')
 
     const existing = getCard(q.id)
-    const card = existing ? createEmptyCard(new Date(existing.due)) : createEmptyCard()
+    const card = existing
+      ? {
+          ...createEmptyCard(),
+          due: new Date(existing.due),
+          stability: existing.stability,
+          difficulty: existing.difficulty,
+          elapsed_days: existing.elapsed_days,
+          scheduled_days: existing.scheduled_days,
+          reps: existing.reps,
+          lapses: existing.lapses,
+          state: existing.state,
+          last_review: existing.last_review ? new Date(existing.last_review) : undefined,
+        }
+      : createEmptyCard()
     const rating = isCorrect ? Rating.Good : Rating.Again
     const result = f.next(card, new Date(), rating)
     const updated = result.card
