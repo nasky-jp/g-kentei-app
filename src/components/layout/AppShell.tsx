@@ -57,7 +57,8 @@ export function AppShell() {
   const { session, reset } = useQuizStore()
   const { theme } = useSettingsStore()
   const { user, initialize, signOut, setCallbacks } = useAuthStore()
-  const { loadFromDB, migrateGuestData, resetAll } = useProgressStore()
+  const { loadFromDB, migrateGuestData, resetAll, getDueCards } = useProgressStore()
+  const dueCount = getDueCards().length
   const [showExitDialog, setShowExitDialog] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const pendingNavRef = useRef<string | null>(null)
@@ -228,7 +229,14 @@ export function AppShell() {
                   )
                 }
               >
-                <Icon className="h-5 w-5" />
+                <div className="relative">
+                  <Icon className="h-5 w-5" />
+                  {to === '/practice' && dueCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-0.5">
+                      {dueCount > 99 ? '99+' : dueCount}
+                    </span>
+                  )}
+                </div>
                 {label}
               </NavLink>
             ))}
